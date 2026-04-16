@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>YGODoku</h1>
+        <h1>YGOdoku</h1>
         <div class="game-wrapper">
             <div class="puzzle-area">
                 <div class="grid-wrapper">
@@ -20,21 +20,21 @@
                     </div>
                     <div class="grid-row">
                         <div class="row-criteria" id="row1-label"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="0"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="1"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="2"></div>
+                        <div class="grid-cell" data-row="0" data-col="0"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="0" data-col="1"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="0" data-col="2"><span class="cell-content"></span></div>
                     </div>
                     <div class="grid-row">
                         <div class="row-criteria" id="row2-label"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="0"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="1"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="2"></div>
+                        <div class="grid-cell" data-row="1" data-col="0"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="1" data-col="1"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="1" data-col="2"><span class="cell-content"></span></div>
                     </div>
                     <div class="grid-row">
                         <div class="row-criteria" id="row3-label"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="0"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="1"></div>
-                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="2"></div>
+                        <div class="grid-cell" data-row="2" data-col="0"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="2" data-col="1"><span class="cell-content"></span></div>
+                        <div class="grid-cell" data-row="2" data-col="2"><span class="cell-content"></span></div>
                     </div>
                 </div>
             </div>
@@ -45,6 +45,18 @@
             <h2>The card was:</h2>
             <img id="card-image" alt="Card Image">
             <p id="card-name"></p>
+        </div>
+    </div>
+
+    <!-- Card Search Modal -->
+    <div id="search-modal" class="search-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Search for a card</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <input type="text" id="modal-search" class="modal-search-input" placeholder="Search card name...">
+            <div id="modal-results" class="modal-results"></div>
         </div>
     </div>
     <script src="script.js"></script>
