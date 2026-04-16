@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YGOdoku - Daily Yu-Gi-Oh Card Guessing Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Today's Puzzle</h1>
+        <div class="game-wrapper">
+            <div class="puzzle-area">
+                <div class="grid-wrapper">
+                    <div class="criteria-header">
+                        <div class="corner-cell"></div>
+                        <div class="col-criteria" id="col1-label"></div>
+                        <div class="col-criteria" id="col2-label"></div>
+                        <div class="col-criteria" id="col3-label"></div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="row-criteria" id="row1-label"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="0"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="1"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="0" data-col="2"></div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="row-criteria" id="row2-label"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="0"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="1"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="1" data-col="2"></div>
+                    </div>
+                    <div class="grid-row">
+                        <div class="row-criteria" id="row3-label"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="0"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="1"></div>
+                        <div class="grid-cell"><input type="text" class="grid-search" placeholder="Search..." data-row="2" data-col="2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="submit-guess">SUBMIT</button>
+        <div id="feedback-area" class="feedback-area"></div>
+        <div id="card-reveal" style="display: none;" class="card-reveal">
+            <h2>The card was:</h2>
+            <img id="card-image" alt="Card Image">
+            <p id="card-name"></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

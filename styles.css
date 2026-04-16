@@ -1,0 +1,261 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a2332;
+    color: #fff;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 40px;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.game-wrapper {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.card-info {
+    flex-shrink: 0;
+}
+
+.card-preview {
+    width: 140px;
+    height: 200px;
+    background: linear-gradient(135deg, #3a4a5f 0%, #2a3a4f 100%);
+    border: 3px solid #4a5a7f;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: bold;
+    color: #6a7a9f;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#card-placeholder {
+    font-size: 64px;
+    font-weight: bold;
+    color: #6a7a9f;
+}
+
+.puzzle-area {
+    flex: 1;
+}
+
+.grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.criteria-header {
+    display: grid;
+    grid-template-columns: 120px repeat(3, 1fr);
+    gap: 0;
+    margin-bottom: 5px;
+}
+
+.corner-cell {
+    height: 40px;
+}
+
+.col-criteria {
+    background-color: #2a3a4f;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    color: #aabbcc;
+    border: 1px solid #4a5a7f;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: 120px repeat(3, 1fr);
+    gap: 0;
+    margin-bottom: 5px;
+}
+
+.row-criteria {
+    background-color: #2a3a4f;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    color: #aabbcc;
+    border: 1px solid #4a5a7f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-wrap: break-word;
+}
+
+.game-grid {
+    display: contents;
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #4a5a7f;
+    background-color: #3a4a5f;
+    padding: 5px;
+    position: relative;
+}
+
+.grid-search {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4a5a7f;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.grid-search:hover {
+    background-color: #5a6a8f;
+}
+
+.grid-search:focus {
+    outline: 2px solid #6a7a9f;
+    background-color: #5a6a8f;
+}
+
+.grid-search.correct {
+    background-color: #4CAF50 !important;
+    color: white;
+}
+
+.grid-search.close {
+    background-color: #FF9800 !important;
+    color: white;
+}
+
+.grid-search.wrong {
+    background-color: #F44336 !important;
+    color: white;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #2a3a4f;
+    border: 1px solid #4a5a7f;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    display: none;
+    z-index: 100;
+}
+
+.search-results.show {
+    display: block;
+}
+
+.search-result-item {
+    padding: 8px;
+    color: #aabbcc;
+    cursor: pointer;
+    border-bottom: 1px solid #3a4a5f;
+    font-size: 11px;
+}
+
+.search-result-item:hover {
+    background-color: #3a4a5f;
+    color: white;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:disabled {
+    background-color: #888;
+    cursor: not-allowed;
+}
+
+.feedback-area {
+    margin-top: 20px;
+    text-align: center;
+    min-height: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #aabbcc;
+}
+
+.card-reveal {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #2a3a4f;
+    border-radius: 8px;
+    border: 2px solid #4a5a7f;
+}
+
+.card-reveal img {
+    max-width: 250px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.card-reveal p {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 15px;
+}
