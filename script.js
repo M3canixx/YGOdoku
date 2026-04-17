@@ -8,7 +8,7 @@ let attemptsRemaining = 3;
 const attributes = ['DARK', 'LIGHT', 'EARTH', 'WATER', 'FIRE', 'WIND', 'DIVINE'];
 const races = ['Warrior', 'Spellcaster', 'Fairy', 'Fiend', 'Zombie', 'Machine', 'Aqua', 'Pyro', 'Rock', 'Winged Beast', 'Plant', 'Insect', 'Thunder', 'Dragon', 'Beast', 'Beast-Warrior', 'Dinosaur', 'Fish', 'Sea Serpent', 'Reptile', 'Psychic', 'Divine-Beast', 'Creator-God', 'Wyrm', 'Cyberse'];
 const types = ['Normal Monster', 'Effect Monster', 'Synchro Monster', 'XYZ Monster', 'Link Monster', 'Fusion Monster'];
-const releaseYearRanges = [[1996,2000], [2001,2005], [2006,2010], [2011,2015], [2016,2020], [2021,2024]];
+const releaseYearRanges = [[1996,2001], [2002,2007], [2008,2013], [2014,2019], [2020,2026]];
 
 async function getTotalCards() {
     try {
@@ -66,7 +66,6 @@ function checkCardAgainstCrit(card, crit) {
         const cardLevel = getCardEffectiveLevel(card);
         if (cardLevel === null || cardLevel < crit.values[0] || cardLevel > crit.values[1]) return false;
     }
-    if (crit.type === 'year' && !cardMatchesYear(card, crit.values[0], crit.values[1])) return false;
     if (crit.type === 'type') {
         const cardType = getCardType(card);
         if (cardType !== crit.values[0]) return false;
@@ -91,24 +90,6 @@ function getCardEffectiveLevel(card) {
         return card.linkval;
     }
     return card.level !== undefined && card.level !== null ? card.level : null;
-}
-
-function cardMatchesYear(card, fromYear, toYear) {
-    const releaseYear = getCardReleaseYear(card);
-    if (!releaseYear) return false;
-    return releaseYear >= fromYear && releaseYear <= toYear;
-}
-
-function getCardReleaseYear(card) {
-    if (!card.card_sets || !Array.isArray(card.card_sets)) return null;
-    for (const set of card.card_sets) {
-        if (!set.set_name) continue;
-        const match = set.set_name.match(/(19|20)\d{2}/);
-        if (match) {
-            return parseInt(match[0], 10);
-        }
-    }
-    return null;
 }
 
 async function fetchCardsForCriteria(rowCrit, colCrit) {
