@@ -279,43 +279,39 @@ function selectCardForCell(row, col, card) {
     document.getElementById('search-modal').style.display = 'none';
 }
 
-let allMonsterCards = []; // Cache for all monster cards
+let allMonsterCards = [];
 
 async function loadAllMonsterCards() {
-    if (allMonsterCards.length > 0) return allMonsterCards; // Already loaded
+    if (allMonsterCards.length > 0) return allMonsterCards;
 
     try {
-        // Load MANY MORE cards to get comprehensive database
+        console.log('Loading monster cards database...');
+
+        // 1. Récupérer le nombre total de cartes
+        const metaRes = await fetch(`${API_BASE}?num=1&offset=0`);
+        const metaData = await metaRes.json();
+        const total = metaData.meta.total_rows;
+
+        // 2. Construire toutes les requêtes en parallèle
         const batchSize = 500;
-        const batches = 25; // Load 12,500 cards total for near-complete coverage
-        let allCards = [];
+        const batchCount = Math.ceil(total / batchSize);
+        const requests = Array.from({ length: batchCount }, (_, i) =>
+            fetch(`${API_BASE}?num=${batchSize}&offset=${i * batchSize}`)
+                .then(res => res.ok ? res.json() : null)
+                .then(data => data?.data ?? [])
+                .catch(() => [])
+        );
 
-        console.log('Loading comprehensive monster cards database...');
+        // 3. Attendre toutes les requêtes en parallèle
+        const batches = await Promise.all(requests);
+        const allCards = batches.flat();
 
-        for (let i = 0; i < batches; i++) {
-            const response = await fetch(`${API_BASE}?num=${batchSize}&offset=${i * batchSize}`);
-            if (!response.ok) {
-                console.warn(`Failed to load batch ${i}, continuing...`);
-                continue;
-            }
+        // 4. Filtrer les monstres
+        allMonsterCards = allCards.filter(card =>
+            card.type?.includes('Monster') && card.name
+        );
 
-            const data = await response.json();
-            if (data && data.data) {
-                allCards = allCards.concat(data.data);
-            }
-
-            // Progress update every 5 batches
-            if ((i + 1) % 5 === 0) {
-                console.log(`Loaded ${allCards.length} cards so far...`);
-            }
-        }
-
-        // Filter to only monster cards
-        allMonsterCards = allCards.filter(card => {
-            return card.type && card.type.includes('Monster') && card.name;
-        });
-
-        console.log(`✅ Loaded ${allMonsterCards.length} monster cards for search (comprehensive database)`);
+        console.log(`✅ ${allMonsterCards.length} monster cards loaded`);
         return allMonsterCards;
     } catch (error) {
         console.error('Error loading monster cards:', error);
