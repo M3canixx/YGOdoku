@@ -35,7 +35,6 @@ function generateCriteria() {
         { type: 'attribute', values: [attributes[Math.floor(Math.random() * attributes.length)], 'Attribute'] },
         { type: 'race', values: [races[Math.floor(Math.random() * races.length)], 'Race'] },
         { type: 'level', values: [[1,3], [4,6], [7,9], [10,12]][Math.floor(Math.random() * 4)].concat(['Level']) },
-        { type: 'year', values: releaseYearRanges[Math.floor(Math.random() * releaseYearRanges.length)].concat(['Year'])},
         { type: 'type', values: [types[Math.floor(Math.random() * types.length)], 'Type'] },
         { type: 'atk', values: [[0,1500], [1501,3500], [3501,5000]][Math.floor(Math.random() * 3)].concat(['ATK']) },
         { type: 'def', values: [[0,1500], [1501,3500], [3501,5000]][Math.floor(Math.random() * 3)].concat(['DEF']) }
@@ -347,7 +346,7 @@ async function fetchCardById(cardId) {
 }
 
 function getCriteriaLabel(criteria) {
-    if (criteria.type === 'level' || criteria.type === 'atk' || criteria.type === 'def' || criteria.type === 'year') {
+    if (criteria.type === 'level' || criteria.type === 'atk' || criteria.type === 'def') {
         return `${criteria.values[0]}-${criteria.values[1]} ${criteria.values[2]}`;
     }
     return `${criteria.values[0]}`;
