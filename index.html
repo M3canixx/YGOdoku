@@ -7,55 +7,49 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>YGOdoku</h1>
-        <div class="game-wrapper">
-            <div class="puzzle-area">
-                <div class="grid-wrapper">
-                    <div class="criteria-header">
-                        <div class="corner-cell"></div>
-                        <div class="col-criteria" id="col1-label"></div>
-                        <div class="col-criteria" id="col2-label"></div>
-                        <div class="col-criteria" id="col3-label"></div>
-                    </div>
-                    <div class="grid-row">
-                        <div class="row-criteria" id="row1-label"></div>
-                        <div class="grid-cell" data-row="0" data-col="0"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="0" data-col="1"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="0" data-col="2"><span class="cell-content"></span></div>
-                    </div>
-                    <div class="grid-row">
-                        <div class="row-criteria" id="row2-label"></div>
-                        <div class="grid-cell" data-row="1" data-col="0"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="1" data-col="1"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="1" data-col="2"><span class="cell-content"></span></div>
-                    </div>
-                    <div class="grid-row">
-                        <div class="row-criteria" id="row3-label"></div>
-                        <div class="grid-cell" data-row="2" data-col="0"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="2" data-col="1"><span class="cell-content"></span></div>
-                        <div class="grid-cell" data-row="2" data-col="2"><span class="cell-content"></span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <button id="submit-guess">SUBMIT</button>
-        <div id="feedback-area" class="feedback-area"></div>
-        <div id="card-reveal" style="display: none;" class="card-reveal">
-            <h2>The card was:</h2>
-            <img id="card-image" alt="Card Image">
-            <p id="card-name"></p>
-        </div>
+    <div id="loading-overlay">
+        <div class="loader-title">YGOdoku</div>
+        <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+        <div class="loader-msg" id="loader-msg">Loading card database...</div>
     </div>
 
-    <!-- Card Search Modal -->
-    <div id="search-modal" class="search-modal" style="display: none;">
+    <h1>YGOdoku</h1>
+
+    <div class="grid-wrapper" id="grid-wrapper">
+        <div class="corner-cell"></div>
+        <div class="col-criteria" id="col1-label"></div>
+        <div class="col-criteria" id="col2-label"></div>
+        <div class="col-criteria" id="col3-label"></div>
+
+        <div class="row-criteria" id="row1-label"></div>
+        <div class="grid-cell" data-row="0" data-col="0"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="0" data-col="1"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="0" data-col="2"><span class="cell-content"></span></div>
+
+        <div class="row-criteria" id="row2-label"></div>
+        <div class="grid-cell" data-row="1" data-col="0"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="1" data-col="1"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="1" data-col="2"><span class="cell-content"></span></div>
+
+        <div class="row-criteria" id="row3-label"></div>
+        <div class="grid-cell" data-row="2" data-col="0"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="2" data-col="1"><span class="cell-content"></span></div>
+        <div class="grid-cell" data-row="2" data-col="2"><span class="cell-content"></span></div>
+    </div>
+
+    <div class="bottom-bar">
+        <div id="feedback-area">Loading...</div>
+        <button id="submit-guess" disabled>SUBMIT</button>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="search-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Search for a card</h3>
+                <h3>Search Card</h3>
                 <button class="modal-close" id="modal-close">&times;</button>
             </div>
-            <input type="text" id="modal-search" class="modal-search-input" placeholder="Search card name...">
+            <input type="text" id="modal-search" class="modal-search-input" placeholder="Type card name...">
             <div id="modal-results" class="modal-results"></div>
         </div>
     </div>

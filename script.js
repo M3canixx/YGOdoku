@@ -1,465 +1,291 @@
 const API_BASE = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
 
-let dailyCard;
 let rowCriteria = [];
 let colCriteria = [];
-let attemptsRemaining = 3;
+let attemptsRemaining = 5;
 
-const attributes = ['DARK', 'LIGHT', 'EARTH', 'WATER', 'FIRE', 'WIND', 'DIVINE'];
-const races = ['Warrior', 'Spellcaster', 'Fairy', 'Fiend', 'Zombie', 'Machine', 'Aqua', 'Pyro', 'Rock', 'Winged Beast', 'Plant', 'Insect', 'Thunder', 'Dragon', 'Beast', 'Beast-Warrior', 'Dinosaur', 'Fish', 'Sea Serpent', 'Reptile', 'Psychic', 'Divine-Beast', 'Creator-God', 'Wyrm', 'Cyberse'];
-const types = ['Normal Monster', 'Effect Monster', 'Synchro Monster', 'XYZ Monster', 'Link Monster', 'Fusion Monster'];
-const releaseYearRanges = [[1996,2001], [2002,2007], [2008,2013], [2014,2019], [2020,2026]];
+const attributes   = ['DARK','LIGHT','EARTH','WATER','FIRE','WIND','DIVINE'];
+const races        = ['Warrior','Spellcaster','Fairy','Fiend','Zombie','Machine','Aqua','Pyro','Rock','Winged Beast','Plant','Insect','Thunder','Dragon','Beast','Beast-Warrior','Dinosaur','Fish','Sea Serpent','Reptile','Psychic','Wyrm','Cyberse'];
+const types        = ['Normal Monster','Effect Monster','Synchro Monster','XYZ Monster','Link Monster','Fusion Monster'];
 
-async function getTotalCards() {
-    try {
-        const response = await fetch(`${API_BASE}?num=1&offset=0`);
-        const data = await response.json();
-        return data.meta.total_rows;
-    } catch (error) {
-        return 12000;
-    }
-}
-
-function getDailyIndex(total) {
-    const today = new Date().toDateString();
-    let hash = 0;
-    for (let i = 0; i < today.length; i++) {
-        hash = ((hash << 5) - hash) + today.charCodeAt(i);
-        hash = hash & hash;
-    }
-    return Math.abs(hash) % total;
-}
-
+/* ──────────────── CRITERIA ──────────────── */
 function generateCriteria() {
-    const Options = [
-        { type: 'attribute', values: [attributes[Math.floor(Math.random() * attributes.length)], 'Attribute'] },
-        { type: 'race', values: [races[Math.floor(Math.random() * races.length)], 'Race'] },
-        { type: 'level', values: [[1,3], [4,6], [7,9], [10,12]][Math.floor(Math.random() * 4)].concat(['Level']) },
-        { type: 'type', values: [types[Math.floor(Math.random() * types.length)], 'Type'] },
-        { type: 'atk', values: [[0,1500], [1501,3500], [3501,5000]][Math.floor(Math.random() * 3)].concat(['ATK']) },
-        { type: 'def', values: [[0,1500], [1501,3500], [3501,5000]][Math.floor(Math.random() * 3)].concat(['DEF']) }
+    const options = [
+        { type: 'attribute', values: [attributes[Math.floor(Math.random() * attributes.length)]] },
+        { type: 'race',      values: [races[Math.floor(Math.random() * races.length)]] },
+        { type: 'level',     values: [[1,3],[4,6],[7,9],[10,12]][Math.floor(Math.random() * 4)] },
+        { type: 'type',      values: [types[Math.floor(Math.random() * types.length)]] },
+        { type: 'atk',       values: [[0,1500],[1501,3500],[3501,5000]][Math.floor(Math.random() * 3)] },
+        { type: 'def',       values: [[0,1500],[1501,3500],[3501,5000]][Math.floor(Math.random() * 3)] },
     ];
-
-    const shuffled = shuffleArray(Options);
+    const shuffled = shuffle(options);
     rowCriteria = shuffled.slice(0, 3);
     colCriteria = shuffled.slice(3, 6);
 }
 
-function shuffleArray(array) {
-    const result = array.slice();
-    for (let i = result.length - 1; i > 0; i--) {
+function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [result[i], result[j]] = [result[j], result[i]];
+        [a[i], a[j]] = [a[j], a[i]];
     }
-    return result;
+    return a;
 }
 
-function matchesCriteria(card, rowCrit, colCrit) {
-    return checkCardAgainstCrit(card, rowCrit) && checkCardAgainstCrit(card, colCrit);
+function getCriteriaLabel(c) {
+    if (c.type === 'level') return `LV ${c.values[0]}–${c.values[1]}`;
+    if (c.type === 'atk')   return `ATK ${c.values[0]}–${c.values[1]}`;
+    if (c.type === 'def')   return `DEF ${c.values[0]}–${c.values[1]}`;
+    return c.values[0];
 }
 
-function checkCardAgainstCrit(card, crit) {
-    if (crit.type === 'attribute' && card.attribute !== crit.values[0]) return false;
-    if (crit.type === 'race' && card.race !== crit.values[0]) return false;
-    if (crit.type === 'level') {
-        const cardLevel = getCardEffectiveLevel(card);
-        if (cardLevel === null || cardLevel < crit.values[0] || cardLevel > crit.values[1]) return false;
-    }
-    if (crit.type === 'type') {
-        const cardType = getCardType(card);
-        if (cardType !== crit.values[0]) return false;
-    }
-    if (crit.type === 'atk' && (card.atk < crit.values[0] || card.atk > crit.values[1])) return false;
-    if (crit.type === 'def' && card.def !== undefined && (card.def < crit.values[0] || card.def > crit.values[1])) return false;
-    return true;
+function displayCriteria() {
+    ['row1-label','row2-label','row3-label'].forEach((id, i) => {
+        document.getElementById(id).textContent = getCriteriaLabel(rowCriteria[i]);
+    });
+    ['col1-label','col2-label','col3-label'].forEach((id, i) => {
+        document.getElementById(id).textContent = getCriteriaLabel(colCriteria[i]);
+    });
 }
 
+/* ──────────────── MATCHING ──────────────── */
 function getCardType(card) {
-    if (card.type.includes('Normal Monster')) return 'Normal Monster';
-    if (card.type.includes('Effect Monster')) return 'Effect Monster';
-    if (card.type.includes('Synchro')) return 'Synchro Monster';
-    if (card.type.includes('XYZ')) return 'XYZ Monster';
-    if (card.type.includes('Link')) return 'Link Monster';
-    if (card.type.includes('Fusion')) return 'Fusion Monster';
+    for (const t of ['Normal Monster','Effect Monster','Synchro Monster','XYZ Monster','Link Monster','Fusion Monster']) {
+        const key = t.replace(' Monster','');
+        if (card.type.includes(key) || card.type.includes(t)) return t;
+    }
     return 'Other';
 }
 
-function getCardEffectiveLevel(card) {
-    if (card.type && card.type.includes('Link Monster') && card.linkval !== undefined && card.linkval !== null) {
-        return card.linkval;
-    }
-    return card.level !== undefined && card.level !== null ? card.level : null;
+function getLevel(card) {
+    if (card.type?.includes('Link') && card.linkval != null) return card.linkval;
+    return card.level ?? null;
 }
 
-async function fetchCardsForCriteria(rowCrit, colCrit) {
-    const params = buildCriteriaQuery(rowCrit, colCrit);
-
-    try {
-        const response = await fetch(`${API_BASE}${params}`);
-        const data = await response.json();
-        return data.data.filter(card => {
-            if (!card.type.includes('Monster')) return false;
-            return matchesCriteria(card, rowCrit, colCrit);
-        }).slice(0, 10);
-    } catch (error) {
-        console.error('Error fetching cards:', error);
-        return [];
+function check(card, c) {
+    if (c.type === 'attribute') return card.attribute === c.values[0];
+    if (c.type === 'race')      return card.race === c.values[0];
+    if (c.type === 'type')      return getCardType(card) === c.values[0];
+    if (c.type === 'level') {
+        const lv = getLevel(card);
+        return lv != null && lv >= c.values[0] && lv <= c.values[1];
     }
-}
-
-function buildCriteriaQuery(rowCrit, colCrit) {
-    const params = [];
-    if (rowCrit.type === 'attribute') params.push(`attribute=${encodeURIComponent(rowCrit.values[0].toLowerCase())}`);
-    if (rowCrit.type === 'race') params.push(`race=${encodeURIComponent(rowCrit.values[0].toLowerCase())}`);
-    if (colCrit.type === 'attribute') params.push(`attribute=${encodeURIComponent(colCrit.values[0].toLowerCase())}`);
-    if (colCrit.type === 'race') params.push(`race=${encodeURIComponent(colCrit.values[0].toLowerCase())}`);
-    return params.length ? `?${params.join('&')}&num=100&offset=0` : '?num=200&offset=0';
-}
-
-async function validatePuzzle() {
-    // Check if all 9 cells have at least one valid card
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-            const cards = await fetchCardsForCriteria(rowCriteria[row], colCriteria[col]);
-            if (cards.length === 0) {
-                return false; // No valid cards for this cell
-            }
-        }
-    }
-    return true;
-}
-
-async function generateValidPuzzle() {
-    let attempts = 0;
-    const maxAttempts = 100;
-    
-    while (attempts < maxAttempts) {
-        generateCriteria();
-        const isValid = await validatePuzzle();
-        
-        if (isValid) {
-            console.log(`✓ Valid puzzle generated on attempt ${attempts + 1}`);
-            return true;
-        }
-        
-        console.log(`✗ Invalid puzzle on attempt ${attempts + 1}, trying again...`);
-        attempts++;
-    }
-    
-    console.error('Could not generate a valid puzzle after max attempts');
+    if (c.type === 'atk') return card.atk != null && card.atk >= c.values[0] && card.atk <= c.values[1];
+    if (c.type === 'def') return card.def != null && card.def >= c.values[0] && card.def <= c.values[1];
     return false;
 }
 
-// Store selected cards for each cell
-const selectedCards = {};
+function matchesCriteria(card, row, col) {
+    return check(card, row) && check(card, col);
+}
 
-async function populateSelects() {
-    // Set up grid cells as clickable elements
-    const cells = document.querySelectorAll('.grid-cell');
-    cells.forEach(cell => {
-        cell.addEventListener('click', (e) => {
-            const row = cell.dataset.row;
-            const col = cell.dataset.col;
-            openSearchModal(row, col);
-        });
-    });
+/* ──────────────── CARD DB ──────────────── */
+let allMonsterCards = [];
 
-    // Set up modal close button and backdrop
-    const modal = document.getElementById('search-modal');
-    const closeBtn = document.getElementById('modal-close');
-    
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+function setLoader(pct, msg) {
+    document.getElementById('loader-bar').style.width = pct + '%';
+    if (msg) document.getElementById('loader-msg').textContent = msg;
+}
 
-    // Close modal when clicking outside of content
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
+async function loadAllMonsterCards() {
+    if (allMonsterCards.length > 0) return;
+
+    setLoader(5, 'Fetching card count...');
+    const meta = await fetch(`${API_BASE}?num=1&offset=0`).then(r => r.json());
+    const total = meta.meta.total_rows;
+
+    const batchSize = 500;
+    const batches = Math.ceil(total / batchSize);
+    const results = [];
+
+    for (let i = 0; i < batches; i++) {
+        const pct = 10 + Math.round((i / batches) * 80);
+        setLoader(pct, `Loading cards… (${Math.min((i+1)*batchSize, total)}/${total})`);
+        try {
+            const d = await fetch(`${API_BASE}?num=${batchSize}&offset=${i * batchSize}`).then(r => r.json());
+            results.push(...(d.data || []));
+        } catch(e) {}
+    }
+
+    allMonsterCards = results.filter(c => c.type?.includes('Monster') && c.name);
+    setLoader(100, `${allMonsterCards.length} monsters loaded!`);
+}
+
+async function hasSolution(row, col) {
+    return allMonsterCards.some(c => matchesCriteria(c, row, col));
+}
+
+async function generateValidPuzzle(maxTries = 60) {
+    for (let i = 0; i < maxTries; i++) {
+        generateCriteria();
+        let valid = true;
+        outer:
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 3; c++) {
+                if (!await hasSolution(rowCriteria[r], colCriteria[c])) {
+                    valid = false; break outer;
+                }
+            }
         }
-    });
-
-    // Set up search input in modal
-    const searchInput = document.getElementById('modal-search');
-    searchInput.addEventListener('input', (e) => handleModalSearch(e));
+        if (valid) return true;
+    }
+    return false;
 }
 
-let currentCellRow = null;
-let currentCellCol = null;
+/* ──────────────── MODAL ──────────────── */
+const selectedCards = {};
+let currentRow = null, currentCol = null;
 
-function openSearchModal(row, col) {
-    currentCellRow = row;
-    currentCellCol = col;
+function openModal(row, col) {
+    currentRow = row;
+    currentCol = col;
     const modal = document.getElementById('search-modal');
-    const searchInput = document.getElementById('modal-search');
-    const resultsContainer = document.getElementById('modal-results');
-    
-    searchInput.value = '';
-    resultsContainer.innerHTML = '';
-    modal.style.display = 'flex';
-    searchInput.focus();
+    const input = document.getElementById('modal-search');
+    document.getElementById('modal-results').innerHTML = '';
+    input.value = '';
+    modal.classList.add('open');
+    setTimeout(() => input.focus(), 50);
 }
 
-async function handleModalSearch(event) {
-    const query = event.target.value.trim();
-    const resultsContainer = document.getElementById('modal-results');
+function closeModal() {
+    document.getElementById('search-modal').classList.remove('open');
+}
 
-    if (query.length < 2) {
-        resultsContainer.innerHTML = '';
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('search-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('search-modal')) closeModal();
+});
+
+document.getElementById('modal-search').addEventListener('input', async e => {
+    const q = e.target.value.trim();
+    const container = document.getElementById('modal-results');
+    if (q.length < 2) { container.innerHTML = ''; return; }
+
+    const term = q.toLowerCase();
+    const matches = allMonsterCards.filter(c => c.name.toLowerCase().includes(term)).slice(0, 40);
+
+    container.innerHTML = '';
+    if (!matches.length) {
+        container.innerHTML = '<div class="search-result-item" style="color:#7a9ab8;cursor:default">No cards found</div>';
         return;
     }
 
-    // Search ALL monster cards (no criteria filtering)
-    const cards = await searchCardsForCell(query, currentCellRow, currentCellCol);
-
-    // Display results
-    resultsContainer.innerHTML = '';
-    if (cards.length === 0) {
-        resultsContainer.innerHTML = '<div class="search-result-item no-results">No cards found</div>';
-        return;
-    }
-
-    cards.forEach(card => {
+    matches.forEach(card => {
         const item = document.createElement('div');
         item.className = 'search-result-item';
-        
-        // Create image element if card has image - use cropped artwork
-        if (card.card_images && card.card_images[0]) {
+
+        if (card.card_images?.[0]) {
             const img = document.createElement('img');
-            // Use cropped image (artwork only) if available, otherwise use regular image
             img.src = card.card_images[0].image_url_cropped || card.card_images[0].image_url;
             img.alt = card.name;
             img.className = 'search-result-image';
             item.appendChild(img);
         }
-        
-        // Add card name
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'search-result-name';
-        nameDiv.textContent = card.name;
-        item.appendChild(nameDiv);
-        
-        item.dataset.cardId = card.id;
-        item.dataset.cardName = card.name;
 
-        item.addEventListener('click', () => {
-            selectCardForCell(currentCellRow, currentCellCol, card);
-        });
+        const name = document.createElement('div');
+        name.className = 'search-result-name';
+        name.textContent = card.name;
+        item.appendChild(name);
 
-        resultsContainer.appendChild(item);
+        item.addEventListener('click', () => selectCard(currentRow, currentCol, card));
+        container.appendChild(item);
     });
-}
+});
 
-function selectCardForCell(row, col, card) {
-    const cellKey = `${row}-${col}`;
-    selectedCards[cellKey] = { id: card.id, name: card.name, imageUrl: card.card_images?.[0]?.image_url_cropped || card.card_images?.[0]?.image_url };
-    
-    // Update cell display
+function selectCard(row, col, card) {
+    const key = `${row}-${col}`;
+    selectedCards[key] = card;
+
     const cell = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
-    if (cell) {
-        const contentSpan = cell.querySelector('.cell-content');
-        contentSpan.innerHTML = ''; // Clear existing content
-        
-        // Add card image if available - use cropped artwork
-        if (card.card_images && card.card_images[0]) {
-            const img = document.createElement('img');
-            // Use cropped image (artwork only) if available, otherwise use regular image
-            img.src = card.card_images[0].image_url_cropped || card.card_images[0].image_url;
-            img.alt = card.name;
-            img.className = 'cell-image';
-            contentSpan.appendChild(img);
-        } else {
-            // Fallback to card name if no image
-            contentSpan.textContent = card.name;
+    const span = cell.querySelector('.cell-content');
+    span.innerHTML = '';
+
+    if (card.card_images?.[0]) {
+        const img = document.createElement('img');
+        img.src = card.card_images[0].image_url_cropped || card.card_images[0].image_url;
+        img.alt = card.name;
+        img.className = 'cell-image';
+        span.appendChild(img);
+    } else {
+        const t = document.createElement('span');
+        t.className = 'cell-text';
+        t.textContent = card.name;
+        span.appendChild(t);
+    }
+
+    cell.classList.remove('correct','wrong','close');
+    closeModal();
+}
+
+/* ──────────────── SUBMIT ──────────────── */
+document.getElementById('submit-guess').addEventListener('click', async () => {
+    const fb = document.getElementById('feedback-area');
+
+    // check all filled
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+        if (!selectedCards[`${r}-${c}`]) {
+            fb.textContent = '⚠️ Fill all 9 cells first!';
+            fb.className = '';
+            return;
         }
     }
-    
-    // Close modal
-    document.getElementById('search-modal').style.display = 'none';
-}
 
-let allMonsterCards = [];
+    document.getElementById('submit-guess').disabled = true;
+    fb.textContent = 'Checking…';
+    fb.className = '';
 
-async function loadAllMonsterCards() {
-    if (allMonsterCards.length > 0) return allMonsterCards;
-
-    try {
-        console.log('Loading monster cards database...');
-
-        // 1. Récupérer le nombre total de cartes
-        const metaRes = await fetch(`${API_BASE}?num=1&offset=0`);
-        const metaData = await metaRes.json();
-        const total = metaData.meta.total_rows;
-
-        // 2. Construire toutes les requêtes en parallèle
-        const batchSize = 500;
-        const batchCount = Math.ceil(total / batchSize);
-        const requests = Array.from({ length: batchCount }, (_, i) =>
-            fetch(`${API_BASE}?num=${batchSize}&offset=${i * batchSize}`)
-                .then(res => res.ok ? res.json() : null)
-                .then(data => data?.data ?? [])
-                .catch(() => [])
-        );
-
-        // 3. Attendre toutes les requêtes en parallèle
-        const batches = await Promise.all(requests);
-        const allCards = batches.flat();
-
-        // 4. Filtrer les monstres
-        allMonsterCards = allCards.filter(card =>
-            card.type?.includes('Monster') && card.name
-        );
-
-        console.log(`✅ ${allMonsterCards.length} monster cards loaded`);
-        return allMonsterCards;
-    } catch (error) {
-        console.error('Error loading monster cards:', error);
-        return [];
-    }
-}
-
-async function searchCardsForCell(query, row, col) {
-    // Load all monster cards if not already loaded
-    const cards = await loadAllMonsterCards();
-
-    // Search among ALL monster cards using fuzzy matching
-    // NO criteria filtering - show ALL monsters that match the search
-    const searchTerm = query.toLowerCase();
-    const matchingCards = cards.filter(card => {
-        return card.name.toLowerCase().includes(searchTerm);
-    });
-
-    console.log(`Found ${matchingCards.length} monsters matching "${query}"`);
-
-    return matchingCards.slice(0, 50); // Return top 50 matches for comprehensive search
-}
-
-async function fetchCardById(cardId) {
-    try {
-        const response = await fetch(`${API_BASE}?id=${cardId}`);
-        const data = await response.json();
-        return data.data[0] || null;
-    } catch (error) {
-        console.error('Error fetching card by ID:', error);
-        return null;
-    }
-}
-
-function getCriteriaLabel(criteria) {
-    if (criteria.type === 'level' || criteria.type === 'atk' || criteria.type === 'def') {
-        return `${criteria.values[0]}-${criteria.values[1]} ${criteria.values[2]}`;
-    }
-    return `${criteria.values[0]}`;
-}
-
-function displayCriteria() {
-    // Row criteria labels
-    document.getElementById('row1-label').textContent = getCriteriaLabel(rowCriteria[0]);
-    document.getElementById('row2-label').textContent = getCriteriaLabel(rowCriteria[1]);
-    document.getElementById('row3-label').textContent = getCriteriaLabel(rowCriteria[2]);
-    
-    // Column criteria labels
-    document.getElementById('col1-label').textContent = getCriteriaLabel(colCriteria[0]);
-    document.getElementById('col2-label').textContent = getCriteriaLabel(colCriteria[1]);
-    document.getElementById('col3-label').textContent = getCriteriaLabel(colCriteria[2]);
-}
-
-async function submitGuess() {
-    let allFilled = true;
-    
-    // Check if all 9 cells have a selected card
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-            const cellKey = `${row}-${col}`;
-            if (!selectedCards[cellKey]) {
-                allFilled = false;
-                break;
-            }
+    let correct = 0;
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+            const card = selectedCards[`${r}-${c}`];
+            const ok = matchesCriteria(card, rowCriteria[r], colCriteria[c]);
+            const cell = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+            cell.classList.remove('correct','wrong','close');
+            cell.classList.add(ok ? 'correct' : 'wrong');
+            if (ok) correct++;
         }
-        if (!allFilled) break;
     }
-    
-    if (!allFilled) {
-        document.getElementById('feedback-area').textContent = 'Please select all cards!';
+
+    if (correct === 9) {
+        fb.textContent = '🎉 Perfect! All 9 correct!';
+        fb.className = 'win';
         return;
     }
 
-    // Validate each card against its criteria
-    const validationPromises = [];
-    for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-            const cellKey = `${row}-${col}`;
-            const selectedCard = selectedCards[cellKey];
-            const rowCrit = rowCriteria[row];
-            const colCrit = colCriteria[col];
-            
-            const promise = (async () => {
-                const card = await fetchCardById(selectedCard.id);
-                const isCorrect = card && matchesCriteria(card, rowCrit, colCrit);
-                
-                // Update cell styling
-                const cell = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`);
-                if (cell) {
-                    cell.classList.remove('correct', 'wrong', 'close');
-                    if (isCorrect) {
-                        cell.classList.add('correct');
-                    } else {
-                        cell.classList.add('wrong');
-                    }
-                }
-                
-                return isCorrect;
-            })();
-            
-            validationPromises.push(promise);
-        }
-    }
-    
-    // Wait for all validations to complete
-    const results = await Promise.all(validationPromises);
-    const correctCount = results.filter(result => result).length;
-    
-    if (correctCount === 9) {
-        document.getElementById('feedback-area').textContent = '🎉 Perfect! All cards match the criteria!';
-        document.getElementById('submit-guess').disabled = true;
-        return;
-    }
-    
-    // Wrong answers - deduct attempt
     attemptsRemaining--;
-    document.getElementById('feedback-area').textContent = `${correctCount}/9 correct. Attempts remaining: ${attemptsRemaining}`;
-    
+
     if (attemptsRemaining <= 0) {
-        document.getElementById('feedback-area').textContent = '❌ Game Over! No more attempts.';
-        document.getElementById('submit-guess').disabled = true;
+        fb.textContent = `❌ Game Over! ${correct}/9 correct.`;
+        fb.className = 'lose';
+    } else {
+        fb.textContent = `${correct}/9 correct — ${attemptsRemaining} attempt${attemptsRemaining > 1 ? 's' : ''} left`;
+        fb.className = '';
+        document.getElementById('submit-guess').disabled = false;
     }
-}
+});
 
+/* ──────────────── INIT ──────────────── */
 async function init() {
-    // Show loading message
-    document.getElementById('feedback-area').textContent = 'Loading comprehensive monster database...';
-
-    // Reset attempts for new puzzle
-    attemptsRemaining = 3;
-
-    // Load monster cards for search functionality
     await loadAllMonsterCards();
 
-    // Generate a valid puzzle
-    document.getElementById('feedback-area').textContent = 'Generating puzzle...';
-    const puzzleGenerated = await generateValidPuzzle();
+    setLoader(95, 'Generating puzzle...');
+    const ok = await generateValidPuzzle();
 
-    if (!puzzleGenerated) {
-        document.getElementById('feedback-area').textContent = 'Error generating puzzle. Try refreshing.';
-        document.getElementById('submit-guess').disabled = true;
+    document.getElementById('loading-overlay').classList.add('hidden');
+
+    if (!ok) {
+        document.getElementById('feedback-area').textContent = '❌ Could not generate puzzle. Refresh to retry.';
         return;
     }
 
     displayCriteria();
-    await populateSelects();
-    document.getElementById('feedback-area').textContent = `Attempts: ${attemptsRemaining}`;
+
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.addEventListener('click', () => openModal(+cell.dataset.row, +cell.dataset.col));
+    });
+
+    document.getElementById('feedback-area').textContent = `${attemptsRemaining} attempts remaining`;
     document.getElementById('submit-guess').disabled = false;
-    document.getElementById('submit-guess').addEventListener('click', submitGuess);
 }
 
 init();
